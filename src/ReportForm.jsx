@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Papa from 'papaparse'
 import { APPS_SCRIPT_URL, SITES as DEFAULT_SITES, CONTRACTOR_COMPANIES as DEFAULT_COMPANIES } from './config.js'
+import InstallPrompt from './InstallPrompt.jsx'
 
 function todayISO() {
   const d = new Date()
@@ -115,6 +116,7 @@ export default function ReportForm() {
 
   return (
     <div className="page">
+      <InstallPrompt />
       <div className="card">
         <div className="brand-header">
           <img src="/logo.png" alt="קל פלד" className="brand-logo" />

@@ -184,6 +184,65 @@ h3.section-title { font-size: 15px; margin: 20px 0 8px; color: var(--accent); }
   margin-bottom: 8px;
 }
 
+.install-banner {
+  width: 100%;
+  padding: 12px 16px;
+  background: #eef2f6;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 100;
+}
+
+.install-modal {
+  position: relative;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px 20px;
+  max-width: 360px;
+  width: 100%;
+}
+
+.install-modal h2 {
+  font-size: 17px;
+  margin: 0 0 16px;
+  color: var(--accent);
+}
+
+.install-steps {
+  padding-right: 20px;
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.ios-share { display: inline-block; }
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
 .table-wrap { overflow-x: auto; }
 
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
