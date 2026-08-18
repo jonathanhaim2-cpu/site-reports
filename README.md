@@ -75,3 +75,4 @@ npm install
 npm run dev
 ```
 צור קובץ `.env.local` עם `VITE_APPS_SCRIPT_URL=...` כדי שהטופס יעבוד מקומית.
+
