@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import Papa from 'papaparse'
-import { APPS_SCRIPT_URL, SITES as DEFAULT_SITES, CONTRACTOR_COMPANIES as DEFAULT_COMPANIES } from './config.js'
+import { APPS_SCRIPT_URL, SITES as DEFAULT_SITES, CONTRACTOR_COMPANIES as DEFAULT_COMPANIES, FOREMEN as DEFAULT_FOREMEN } from './config.js'
 import InstallPrompt from './InstallPrompt.jsx'
 
 function todayISO() {
@@ -9,6 +9,7 @@ function todayISO() {
 }
 
 const OTHER_COMPANY = '__other__'
+const OTHER_FOREMAN = '__other__'
 
 function emptyRow() {
   return { id: crypto.randomUUID(), company: '', customCompany: '', workers: '' }
@@ -22,6 +23,7 @@ function resolveCompany(row) {
 function useLiveOptions() {
   const [sites, setSites] = useState(DEFAULT_SITES)
   const [companies, setCompanies] = useState(DEFAULT_COMPANIES)
+  const [foremen, setForemen] = useState(DEFAULT_FOREMEN)
 
   useEffect(() => {
     fetch('/api/settings')
@@ -30,27 +32,39 @@ function useLiveOptions() {
         const { data } = Papa.parse(text, { header: true, skipEmptyLines: true })
         const liveSites = data.map(r => (r['אתרים'] || '').trim()).filter(Boolean)
         const liveCompanies = data.map(r => (r['חברות'] || '').trim()).filter(Boolean)
+        const liveForemen = data.map(r => (r['מנהלי עבודה'] || '').trim()).filter(Boolean)
         if (liveSites.length) setSites(liveSites)
         if (liveCompanies.length) setCompanies(liveCompanies)
+        if (liveForemen.length) setForemen(liveForemen)
       })
       .catch(() => {}) // נשאר עם ברירת המחדל מהקוד
   }, [])
 
-  return { sites, companies }
+  return { sites, companies, foremen }
 }
 
 export default function ReportForm() {
-  const { sites: SITES, companies: CONTRACTOR_COMPANIES } = useLiveOptions()
+  const { sites: SITES, companies: CONTRACTOR_COMPANIES, foremen: FOREMEN } = useLiveOptions()
   const [date, setDate] = useState(todayISO())
   const [site, setSite] = useState('')
-  const [foreman, setForeman] = useState(localStorage.getItem('foremanName') || '')
+  const [foreman, setForeman] = useState('')
+  const [customForeman, setCustomForeman] = useState('')
   const [rows, setRows] = useState([emptyRow()])
   const [notes, setNotes] = useState('')
   const [status, setStatus] = useState('idle') // idle | sending | done | error
 
+  const resolvedForeman = foreman === OTHER_FOREMAN ? customForeman : foreman
+
   useEffect(() => {
     if (!site && SITES.length) setSite(SITES[0])
   }, [SITES, site])
+
+  useEffect(() => {
+    if (foreman) return
+    const saved = localStorage.getItem('foremanName')
+    if (saved && FOREMEN.includes(saved)) setForeman(saved)
+    else if (FOREMEN.length) setForeman(FOREMEN[0])
+  }, [FOREMEN, foreman])
 
   function updateRow(id, field, value) {
     setRows(rs => rs.map(r => (r.id === id ? { ...r, [field]: value } : r)))
@@ -66,7 +80,7 @@ export default function ReportForm() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!site || !foreman.trim()) return
+    if (!site || !resolvedForeman.trim()) return
 
     const validRows = rows.filter(r => resolveCompany(r).trim() && r.workers)
     if (validRows.length === 0) {
@@ -74,7 +88,7 @@ export default function ReportForm() {
       return
     }
 
-    localStorage.setItem('foremanName', foreman.trim())
+    localStorage.setItem('foremanName', resolvedForeman.trim())
     setStatus('sending')
 
     try {
@@ -83,7 +97,7 @@ export default function ReportForm() {
         body: JSON.stringify({
           date,
           site,
-          foreman: foreman.trim(),
+          foreman: resolvedForeman.trim(),
           notes: notes.trim(),
           rows: validRows.map(r => ({
             company: resolveCompany(r).trim(),
@@ -138,8 +152,26 @@ export default function ReportForm() {
 
           <label className="field">
             <span>שם מנהל העבודה</span>
-            <input type="text" value={foreman} onChange={e => setForeman(e.target.value)} placeholder="שם מלא" required />
+            <select value={foreman} onChange={e => setForeman(e.target.value)} required>
+              <option value="" disabled>בחר מנהל עבודה</option>
+              {FOREMEN.map(f => <option key={f} value={f}>{f}</option>)}
+              <option value={OTHER_FOREMAN}>אחר...</option>
+            </select>
           </label>
+
+          {foreman === OTHER_FOREMAN && (
+            <label className="field">
+              <span>שם מלא</span>
+              <input
+                type="text"
+                value={customForeman}
+                onChange={e => setCustomForeman(e.target.value)}
+                placeholder="הקלד שם מלא"
+                autoFocus
+                required
+              />
+            </label>
+          )}
 
           <h3 className="section-title">חברות קבלן שהגיעו היום</h3>
 
