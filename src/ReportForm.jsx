@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { APPS_SCRIPT_URL, SITES, CONTRACTOR_COMPANIES } from './config.js'
+import { useEffect, useState } from 'react'
+import Papa from 'papaparse'
+import { APPS_SCRIPT_URL, SITES as DEFAULT_SITES, CONTRACTOR_COMPANIES as DEFAULT_COMPANIES } from './config.js'
 
 function todayISO() {
   const d = new Date()
@@ -16,13 +17,39 @@ function resolveCompany(row) {
   return row.company === OTHER_COMPANY ? row.customCompany : row.company
 }
 
+// שולף אתרים/חברות מלשונית "הגדרות" בגיליון, כדי שאפשר יהיה לערוך אותם בלי לגעת בקוד
+function useLiveOptions() {
+  const [sites, setSites] = useState(DEFAULT_SITES)
+  const [companies, setCompanies] = useState(DEFAULT_COMPANIES)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => (r.ok ? r.text() : Promise.reject()))
+      .then(text => {
+        const { data } = Papa.parse(text, { header: true, skipEmptyLines: true })
+        const liveSites = data.map(r => (r['אתרים'] || '').trim()).filter(Boolean)
+        const liveCompanies = data.map(r => (r['חברות'] || '').trim()).filter(Boolean)
+        if (liveSites.length) setSites(liveSites)
+        if (liveCompanies.length) setCompanies(liveCompanies)
+      })
+      .catch(() => {}) // נשאר עם ברירת המחדל מהקוד
+  }, [])
+
+  return { sites, companies }
+}
+
 export default function ReportForm() {
+  const { sites: SITES, companies: CONTRACTOR_COMPANIES } = useLiveOptions()
   const [date, setDate] = useState(todayISO())
-  const [site, setSite] = useState(SITES[0] || '')
+  const [site, setSite] = useState('')
   const [foreman, setForeman] = useState(localStorage.getItem('foremanName') || '')
   const [rows, setRows] = useState([emptyRow()])
   const [notes, setNotes] = useState('')
   const [status, setStatus] = useState('idle') // idle | sending | done | error
+
+  useEffect(() => {
+    if (!site && SITES.length) setSite(SITES[0])
+  }, [SITES, site])
 
   function updateRow(id, field, value) {
     setRows(rs => rs.map(r => (r.id === id ? { ...r, [field]: value } : r)))
