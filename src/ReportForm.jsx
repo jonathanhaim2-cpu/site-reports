@@ -6,8 +6,14 @@ function todayISO() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+const OTHER_COMPANY = '__other__'
+
 function emptyRow() {
-  return { id: crypto.randomUUID(), company: '', workers: '' }
+  return { id: crypto.randomUUID(), company: '', customCompany: '', workers: '' }
+}
+
+function resolveCompany(row) {
+  return row.company === OTHER_COMPANY ? row.customCompany : row.company
 }
 
 export default function ReportForm() {
@@ -34,7 +40,7 @@ export default function ReportForm() {
     e.preventDefault()
     if (!site || !foreman.trim()) return
 
-    const validRows = rows.filter(r => r.company.trim() && r.workers)
+    const validRows = rows.filter(r => resolveCompany(r).trim() && r.workers)
     if (validRows.length === 0) {
       alert('יש להזין לפחות שורת חברה אחת עם מספר עובדים')
       return
@@ -52,7 +58,7 @@ export default function ReportForm() {
           foreman: foreman.trim(),
           notes: notes.trim(),
           rows: validRows.map(r => ({
-            company: r.company.trim(),
+            company: resolveCompany(r).trim(),
             workers: Number(r.workers),
           })),
         }),
@@ -112,14 +118,28 @@ export default function ReportForm() {
             <div className="row-group" key={row.id}>
               <label className="field">
                 <span>חברה #{i + 1}</span>
-                <input
-                  list="companies-list"
-                  type="text"
+                <select
                   value={row.company}
                   onChange={e => updateRow(row.id, 'company', e.target.value)}
-                  placeholder="שם החברה"
-                />
+                >
+                  <option value="" disabled>בחר חברה</option>
+                  {CONTRACTOR_COMPANIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  <option value={OTHER_COMPANY}>אחר...</option>
+                </select>
               </label>
+
+              {row.company === OTHER_COMPANY && (
+                <label className="field">
+                  <span>שם החברה</span>
+                  <input
+                    type="text"
+                    value={row.customCompany}
+                    onChange={e => updateRow(row.id, 'customCompany', e.target.value)}
+                    placeholder="הקלד שם חברה"
+                    autoFocus
+                  />
+                </label>
+              )}
               <div className="row-inline">
                 <label className="field small">
                   <span>כמות עובדים</span>
@@ -135,10 +155,6 @@ export default function ReportForm() {
               </div>
             </div>
           ))}
-
-          <datalist id="companies-list">
-            {CONTRACTOR_COMPANIES.map(c => <option key={c} value={c} />)}
-          </datalist>
 
           <button type="button" className="btn-secondary" onClick={addRow}>+ הוסף חברה נוספת</button>
 
