@@ -83,7 +83,10 @@ export default function ReportForm() {
   return (
     <div className="page">
       <div className="card">
-        <h1>דיווח יומי - אתר בנייה</h1>
+        <div className="brand-header">
+          <img src="/logo.png" alt="קל פלד" className="brand-logo" />
+          <h1>דיווח יומי - אתר בנייה</h1>
+        </div>
 
         <form onSubmit={handleSubmit}>
           <label className="field">

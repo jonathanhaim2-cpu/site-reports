@@ -90,7 +90,10 @@ export default function Dashboard() {
     <div className="page">
       <div className="card">
         <div className="dash-header">
-          <h1>📋 דשבורד דיווחי אתרים</h1>
+          <div className="brand-header">
+            <img src="/logo.png" alt="קל פלד" className="brand-logo" />
+            <h1>דשבורד דיווחי אתרים</h1>
+          </div>
           {updatedAt && <span className="muted">עודכן {updatedAt.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}</span>}
         </div>
 

@@ -46,7 +46,8 @@ export default function LoginPage() {
   return (
     <div className="page center">
       <div className="card login-card">
-        <h1>🏗️ כניסת מנהלים</h1>
+        <img src="/logo.png" alt="קל פלד" className="brand-logo" style={{ marginBottom: 12 }} />
+        <h1>כניסת מנהלים</h1>
         <p className="muted">דשבורד דיווחי אתרים - למורשים בלבד</p>
         <input
           className={`text-input ${error ? 'input-error' : ''}`}
