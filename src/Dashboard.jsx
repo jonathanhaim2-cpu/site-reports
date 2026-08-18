@@ -25,7 +25,6 @@ function useReports(token, onUnauth) {
           foreman: (r['מנהל עבודה'] || '').trim(),
           company: (r['חברה'] || '').trim(),
           workers: Number(r['עובדים']) || 0,
-          hours: Number(r['שעות']) || 0,
           notes: (r['הערות'] || '').trim(),
         })).filter(r => r.date && r.site)
         setRows(parsed)
@@ -62,23 +61,20 @@ export default function Dashboard() {
   }, [rows, siteFilter, fromDate, toDate])
 
   const totalWorkers = filtered.reduce((s, r) => s + r.workers, 0)
-  const totalHours = filtered.reduce((s, r) => s + r.hours, 0)
 
   const byCompany = useMemo(() => {
     const map = {}
     filtered.forEach(r => {
-      if (!map[r.company]) map[r.company] = { name: r.company, hours: 0, workers: 0 }
-      map[r.company].hours += r.hours
+      if (!map[r.company]) map[r.company] = { name: r.company, workers: 0 }
       map[r.company].workers += r.workers
     })
-    return Object.values(map).sort((a, b) => b.hours - a.hours)
+    return Object.values(map).sort((a, b) => b.workers - a.workers)
   }, [filtered])
 
   const byDate = useMemo(() => {
     const map = {}
     filtered.forEach(r => {
-      if (!map[r.date]) map[r.date] = { date: r.date, hours: 0, workers: 0 }
-      map[r.date].hours += r.hours
+      if (!map[r.date]) map[r.date] = { date: r.date, workers: 0 }
       map[r.date].workers += r.workers
     })
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date))
@@ -119,12 +115,11 @@ export default function Dashboard() {
         <div className="kpi-row">
           <div className="kpi-card"><div className="kpi-value">{filtered.length}</div><div className="kpi-label">דיווחים</div></div>
           <div className="kpi-card"><div className="kpi-value">{totalWorkers}</div><div className="kpi-label">סה"כ עובדים (מצטבר)</div></div>
-          <div className="kpi-card"><div className="kpi-value">{totalHours.toLocaleString('he-IL')}</div><div className="kpi-label">סה"כ שעות</div></div>
         </div>
       </div>
 
       <div className="card">
-        <h2 className="card-heading">שעות לפי חברת קבלן</h2>
+        <h2 className="card-heading">עובדים לפי חברת קבלן</h2>
         <ResponsiveContainer width="100%" height={Math.max(200, byCompany.length * 48 + 40)}>
           <BarChart data={byCompany} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -132,20 +127,20 @@ export default function Dashboard() {
             <YAxis dataKey="name" type="category" width={140} />
             <Tooltip />
             <Legend />
-            <Bar dataKey="hours" name="שעות" fill={COLORS[0]} radius={[0, 4, 4, 0]} />
+            <Bar dataKey="workers" name="עובדים" fill={COLORS[0]} radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       <div className="card">
-        <h2 className="card-heading">שעות לפי תאריך</h2>
+        <h2 className="card-heading">עובדים לפי תאריך</h2>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={byDate} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="hours" name="שעות" fill={COLORS[2]} radius={[4, 4, 0, 0]} />
+            <Bar dataKey="workers" name="עובדים" fill={COLORS[2]} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -156,18 +151,18 @@ export default function Dashboard() {
           <table>
             <thead>
               <tr>
-                <th>תאריך</th><th>אתר</th><th>מנהל עבודה</th><th>חברה</th><th>עובדים</th><th>שעות</th><th>הערות</th>
+                <th>תאריך</th><th>אתר</th><th>מנהל עבודה</th><th>חברה</th><th>עובדים</th><th>הערות</th>
               </tr>
             </thead>
             <tbody>
               {filtered.slice().reverse().map((r, i) => (
                 <tr key={i}>
                   <td>{r.date}</td><td>{r.site}</td><td>{r.foreman}</td><td>{r.company}</td>
-                  <td>{r.workers}</td><td>{r.hours}</td><td>{r.notes}</td>
+                  <td>{r.workers}</td><td>{r.notes}</td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="muted" style={{ textAlign: 'center' }}>אין נתונים להצגה</td></tr>
+                <tr><td colSpan={6} className="muted" style={{ textAlign: 'center' }}>אין נתונים להצגה</td></tr>
               )}
             </tbody>
           </table>

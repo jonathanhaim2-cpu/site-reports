@@ -17,7 +17,7 @@
 var SHEET_ID = '1I1ZiVRDyj6RI2HXYrlrI17-o8MMZ7b93fip15aniIws'
 var SHEET_NAME = 'דיווחים'
 
-var HEADERS = ['תאריך', 'אתר', 'מנהל עבודה', 'חברה', 'עובדים', 'שעות', 'הערות', 'זמן שליחה']
+var HEADERS = ['תאריך', 'אתר', 'מנהל עבודה', 'חברה', 'עובדים', 'הערות', 'זמן שליחה']
 
 function doPost(e) {
   var out
@@ -33,7 +33,7 @@ function doPost(e) {
 
     var timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm')
     var rows = (body.rows || []).map(function (r) {
-      return [body.date, body.site, body.foreman, r.company, r.workers, r.hours, body.notes || '', timestamp]
+      return [body.date, body.site, body.foreman, r.company, r.workers, body.notes || '', timestamp]
     })
 
     if (rows.length > 0) {

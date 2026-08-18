@@ -7,7 +7,7 @@ function todayISO() {
 }
 
 function emptyRow() {
-  return { id: crypto.randomUUID(), company: '', workers: '', hours: '' }
+  return { id: crypto.randomUUID(), company: '', workers: '' }
 }
 
 export default function ReportForm() {
@@ -34,9 +34,9 @@ export default function ReportForm() {
     e.preventDefault()
     if (!site || !foreman.trim()) return
 
-    const validRows = rows.filter(r => r.company.trim() && r.workers && r.hours)
+    const validRows = rows.filter(r => r.company.trim() && r.workers)
     if (validRows.length === 0) {
-      alert('יש להזין לפחות שורת חברה אחת עם מספר עובדים ושעות')
+      alert('יש להזין לפחות שורת חברה אחת עם מספר עובדים')
       return
     }
 
@@ -54,7 +54,6 @@ export default function ReportForm() {
           rows: validRows.map(r => ({
             company: r.company.trim(),
             workers: Number(r.workers),
-            hours: Number(r.hours),
           })),
         }),
       })
@@ -120,19 +119,11 @@ export default function ReportForm() {
               </label>
               <div className="row-inline">
                 <label className="field small">
-                  <span>עובדים</span>
+                  <span>כמות עובדים</span>
                   <input
                     type="number" min="0" inputMode="numeric"
                     value={row.workers}
                     onChange={e => updateRow(row.id, 'workers', e.target.value)}
-                  />
-                </label>
-                <label className="field small">
-                  <span>שעות עבודה</span>
-                  <input
-                    type="number" min="0" step="0.5" inputMode="decimal"
-                    value={row.hours}
-                    onChange={e => updateRow(row.id, 'hours', e.target.value)}
                   />
                 </label>
                 {rows.length > 1 && (
