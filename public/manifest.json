@@ -1,0 +1,9 @@
+{
+  "name": "דיווח יומי - אתרי בנייה",
+  "short_name": "דיווח יומי",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#1e3a5f",
+  "icons": []
+}
